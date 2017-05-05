@@ -25,17 +25,17 @@ CURRENCY_URL = "https://openexchangerates.org//api/latest.json?app_id=29b7b7747b
 
 @app.route('/')
 def home():
-    # pobierz nagłówki zgodne z wyborem użytkownika
+    # pobierz naglowki zgodne z wyborem uzytkownika
     publication = request.args.get('publication')
     if not publication:
         publication = DEFLAUTS['publication']
     articles = get_news(publication)
-    # pobierz pogodę dla miasta określonego przez użytkownika
+    # pobierz pogode dla miasta okreslonego przez uzytkownika
     city = request.args.get('city')
     if not city:
         city = DEFLAUTS['city']
     weather = get_weather(city)
-    # pobieranie kursów walutowych w oparciu o wybrana przez uzytkownika walute
+    # pobieranie kursow walutowych w oparciu o wybrana przez uzytkownika walute
     currency_from = request.args.get("currency_from")
     if not currency_from:
         currency_from = DEFLAUTS['currency_from']
@@ -47,15 +47,11 @@ def home():
 
 
 def get_news(query):
-    # query = request.args.get("publication")
     if not query or query.lower() not in RSS_FEEDS:
         publication = DEFLAUTS['publication']
     else:
         publication = query.lower()
     feed = feedparser.parse(RSS_FEEDS[publication])
-    # weather = get_weather("London,UK")
-    # return render_template("home.html", articles=feed['entries'],
-    # weather=weather)
     return feed['entries']
 
 
@@ -63,9 +59,7 @@ def get_weather(query):
     query = urllib.quote(query)
     url = WEATHER_URL.format(query)
     data = urllib2.urlopen(url).read()
-    # str_data = data.read().decode('utf-8')
     parsed = json.loads(data.decode('utf-8'))
-    # parsed = json.loads(str_data)
     weather = None
     if parsed.get('weather'):
         weather = {'description': parsed['weather'][0]['description'],
