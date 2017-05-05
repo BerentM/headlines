@@ -26,20 +26,20 @@ CURRENCY_URL = "https://openexchangerates.org//api/latest.json?app_id=29b7b7747b
 @app.route('/')
 def home():
     # pobierz nagłówki zgodne z wyborem użytkownika
-    publication = request.form.get('publication')
+    publication = request.args.get('publication')
     if not publication:
         publication = DEFLAUTS['publication']
     articles = get_news(publication)
     # pobierz pogodę dla miasta określonego przez użytkownika
-    city = request.form.get('city')
+    city = request.args.get('city')
     if not city:
         city = DEFLAUTS['city']
     weather = get_weather(city)
     # pobieranie kursów walutowych w oparciu o wybrana przez uzytkownika walute
-    currency_from = request.form.get("currency_from")
+    currency_from = request.args.get("currency_from")
     if not currency_from:
         currency_from = DEFLAUTS['currency_from']
-    currency_to = request.form.get('currency_to')
+    currency_to = request.args.get('currency_to')
     if not currency_to:
         currency_to = DEFLAUTS['currency_to']
     rate, currencies = get_rate(currency_from, currency_to)
