@@ -3,9 +3,9 @@ from flask import Flask
 from flask import render_template
 from flask import request
 import json
-from urllib.parse import quote
+import urllib.parse
 #import urllib.parse as urllib
-from urllib.request import urlopen
+import urllib.request
 # import urllib.request as urllib2
 
 app = Flask(__name__)
@@ -58,9 +58,9 @@ def get_news(query):
 
 
 def get_weather(query):
-    query = quote(query)
+    query = urllib.parse.quote(query)
     url = WEATHER_URL.format(query)
-    data = urlopen(url).read()
+    data = urllib.request.urlopen(url).read()
     parsed = json.loads(data.decode('utf-8'))
     weather = None
     if parsed.get('weather'):
@@ -72,7 +72,7 @@ def get_weather(query):
 
 
 def get_rate(frm, to):
-    all_currency = urlopen(CURRENCY_URL).read()
+    all_currency = urllib.request.urlopen(CURRENCY_URL).read()
     parsed = json.loads(all_currency.decode('utf-8')).get('rates')
     frm_rate = parsed.get(frm.upper())
     to_rate = parsed.get(to.upper())
