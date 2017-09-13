@@ -1,10 +1,12 @@
+import datetime
 import feedparser
 from flask import Flask
 from flask import render_template
 from flask import request
+from flask import make_response
 import json
 import urllib.parse
-#import urllib.parse as urllib
+# import urllib.parse as urllib
 import urllib.request
 # import urllib.request as urllib2
 
@@ -28,25 +30,27 @@ CURRENCY_URL = "https://openexchangerates.org//api/latest.json?app_id=29b7b7747b
 @app.route('/')
 def home():
     # pobierz naglowki zgodne z wyborem uzytkownika
-    publication = request.args.get('publication')
-    if not publication:
-        publication = DEFLAUTS['publication']
+    publication = get_value_with_fallback('publication')
     articles = get_news(publication)
-    # pobierz pogode dla miasta okreslonego przez uzytkownika
-    city = request.args.get('city')
-    if not city:
-        city = DEFLAUTS['city']
-    weather = get_weather(city)
-    # pobieranie kursow walutowych w oparciu o wybrana przez uzytkownika walute
-    currency_from = request.args.get("currency_from")
-    if not currency_from:
-        currency_from = DEFLAUTS['currency_from']
-    currency_to = request.args.get('currency_to')
-    if not currency_to:
-        currency_to = DEFLAUTS['currency_to']
-    rate, currencies = get_rate(currency_from, currency_to)
-    return render_template("home.html", articles=articles, weather=weather, currency_from=currency_from, currency_to=currency_to, rate=rate, currencies=sorted(currencies))
 
+    # pobierz pogode dla miasta okreslonego przez uzytkownika
+    city = get_value_with_fallback('city')
+    weather = get_weather(city)
+
+    # pobieranie kursow walutowych w oparciu o wybrana przez uzytkownika walute
+    currency_from = get_value_with_fallback("currency_from")
+    currency_to = get_value_with_fallback('currency_to')
+    rate, currencies = get_rate(currency_from, currency_to)
+
+    response = make_response(render_template("home.html",articles = articles,
+        weather = weather, currency_from = currency_from,
+        currency_to = currency_to, rate = rate, currencies = sorted(currencies)))
+    expires = datetime.datetime.now() + datetime.timedelta(days=365)
+    response.set_cookie("publication", publication, expires=expires)
+    response.set_cookie("city", city, expires = expires)
+    response.set_cookie("currency_from", currency_from, expires = expires)
+    response.set_cookie("currency_to", currency_to, expires = expires)
+    return response
 
 def get_news(query):
     if not query or query.lower() not in RSS_FEEDS:
@@ -78,6 +82,12 @@ def get_rate(frm, to):
     to_rate = parsed.get(to.upper())
     return (to_rate / frm_rate, parsed.keys())
 
+def get_value_with_fallback(key):
+    if request.args.get(key):
+        return request.args.get(key)
+    if request.cookies.get(key):
+        return request.cookies.get(key)
+    return DEFLAUTS[key]
 
 if __name__ == '__main__':
     app.run(port=8000, debug=True)
